@@ -111,26 +111,80 @@ class CYK():
         return [i for i in cyk_tab[-1][0]]
 
 
-def manual_annotate(sentence):
-    full_sentence = "The cat sat on the couch"
-    sentence = full_sentence.split()
-    pos =      [["DET"], ["NOUN"], ["VERB"], ["PREP"], ["DET"], ["NOUN"]]
 
-    # defining the grammar rules
+def parse_sentence_cyk(full_sentence, pos):
+    sentence = full_sentence.split()
     G = [
-        # S is axiom
-        ("S", ("NP", "VP")), 
-        
-            # non terminal rules
-        ("NP", ("DET", "NOUN")),
-        ("PP", ("PREP", "NP")),
-        ("VP", ("VERB", "PP")),
-        
-        # terminal (if using pos directly)
-        ("DET", ("DET",)),
-        ("VERB", ("VERB",)),
-        ("NOUN", ("NOUN",)),
-        ("PREP", ("PREP",))
-    ]
+            
+            ("S", ("NP", "VP")), 
+            
+                
+            ("NP", ("DET", "NOUN")),
+            ("NP", ("NOUN",)),
+            ("NP", ("NP", "PP")), 
+
+            ("PP", ("PREP", "NP")),
+
+            ("VP", ("VERB", "NP")),
+            ("VP", ("VERB", "PP")),
+            ("VP", ("VERB",)),
+            ("VP", ("VP","PP")),
+            
+            
+            ("DET", ("DET",)),
+            ("VERB", ("VERB",)),
+            ("NOUN", ("NOUN",)),
+            ("PREP", ("PREP",))
+        ]
+
+
     cyk = CYK(G)
-    print(cyk(pos, sentence)) 
+    trees = cyk(pos, sentence)   
+    for t in trees:
+        print(t)
+    print("Nb parses:", len(trees))
+
+
+
+if __name__ == "__main__":
+    sentences = [
+    "The cat sat on the couch",
+    "Time flies like an arrow",
+    "The spy saw the cop with the telescope"
+]
+    pos_lists = [
+
+    #The cat sat on the couch
+    [
+        ["DET"],          
+        ["NOUN"],         
+        ["VERB"],         
+        ["PREP"],         
+        ["DET"],          
+        ["NOUN"]         
+    ],
+
+    #Time flies like an arrow
+    [
+        ["NOUN"],                 
+        ["NOUN", "VERB"],         # flies 
+        ["PREP", "VERB"],         # like 
+        ["DET"],                  
+        ["NOUN"]                  
+    ],
+    #The spy saw the cop with the telescope
+    [
+        ["DET"],          
+        ["NOUN"],         
+        ["VERB"],         
+        ["DET"],          
+        ["NOUN"],         
+        ["PREP"],        
+        ["DET"],         
+        ["NOUN"]          
+    ]
+]
+    for sentence, pos in zip(sentences, pos_lists):
+
+        print("Sentence:", sentence)
+        parse_sentence_cyk(sentence, pos)
